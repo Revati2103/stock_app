@@ -4,60 +4,24 @@ import SearchBar from './SearchBar';
 import styles from './ChartContainer.module.css';
 
 const ChartContainer = () => {
-    const [stockSymbols, setStockSymbols] = useState([]);
-    const [selectedStock, setSelectedStock] = useState('');
-    const [low, setLows] = useState([]);
-    const [high, setHighs] = useState([]);
+    const [stockSymbols, setStockSymbols] = useState([]); // set the symbols in the dropdown
+    const [selectedStock, setSelectedStock] = useState(''); // select a stock from the dropdown using `selectedStock`
 
     const handleChange = (e) => {
         const val = e.target.value;
-
-        if (val.length >= 3) {
-            window
-                .fetch(
-                    `https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=${val}&apikey=${process.env.STOCK_API}`
-                )
-                .then((res) => res.json())
-                .then((json) => {
-                    setStockSymbols(
-                        (json?.bestMatches || []).map((stock) => ({
-                            id: stock?.['1. symbol'],
-                            value: stock?.['1. symbol'],
-                            ...stock,
-                        }))
-                    );
-                })
-                .catch((e) => console.log(e));
-        }
+        // TODO make a fetch request to get the symbols to populate the dropdown
+        // https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=
     };
 
     const formatTimeSeriesData = (json = {}) => {
-        const [lows, highs] = [[], []];
-        const times = Object.keys(json);
-
-        times.forEach((time) => {
-            const formattedDate = new Date(time).getTime();
-            highs.push([formattedDate, +json[time]?.['2. high']]);
-            lows.push([formattedDate, +json[time]?.['3. low']]);
-        });
-
-        setLows(lows);
-        setHighs(highs);
+        // TODO this function should format the data in a way highcharts expects it - [date (in seconds), value]
+        // example: [[123345, 11.1], [12312312, 100.1], ..]
     };
 
     const selectStock = ({ value }) => {
-        setSelectedStock(value);
-        setStockSymbols([]);
-        setSelectedStock(value);
-
-        window
-            .fetch(
-                `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${value}&apikey=${process.env.STOCK_API}`
-            )
-            .then((res) => res.json())
-            .then((json) => {
-                formatTimeSeriesData(json?.['Time Series (Daily)']);
-            });
+        // TODO when a user clicks on a stock, it should trigger a request to get the daily
+        // https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=
+        // the data will need to be formatted using the helper above which needs to be completed
     };
 
     const options = {
@@ -89,12 +53,12 @@ const ChartContainer = () => {
             {
                 type: 'spline',
                 name: 'Low',
-                data: [...low],
+                data: [], // add the data for daily lows here
             },
             {
                 type: 'spline',
                 name: 'High',
-                data: [...high],
+                data: [], // add the data for daily highs here
             },
         ],
     };
@@ -106,7 +70,7 @@ const ChartContainer = () => {
                 options={stockSymbols}
                 selectOption={selectStock}
             />
-            {low.length && high.length ? (
+            {options.series[0].data.length ? (
                 <div
                     className={styles.chartContainer}
                     data-testid="stock-chart"

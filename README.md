@@ -34,6 +34,16 @@ The search should populate a dropdown.
 
 From the dropdown, a user can click a stock symbol which will render the chart with the daily low and high values.
 
+---
+
+### Bonus
+
+---
+
+This app could certainly use some styling! Add any library you feel will make this look better and any additional tests you feel are missing.
+
+Feel free to extend functionality as well by exploring different endpoints to use or comparing companies perhaps.
+
 ![dropdown stock symbols](/public/dropdown.png)
 
 ![dropdown stock symbols](/public/chart.png)
