@@ -7,10 +7,15 @@ const ChartContainer = () => {
     const [stockSymbols, setStockSymbols] = useState([]); // set the symbols in the dropdown
     const [selectedStock, setSelectedStock] = useState(''); // select a stock from the dropdown using `selectedStock`
 
-    const handleChange = (e) => {
+    const handleChange = async (e) => {
         const val = e.target.value;
         // TODO make a fetch request to get the symbols to populate the dropdown
-        // https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=
+       
+        const response = await fetch(`https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=${val}&apikey=${process.env.API_KEY}`)
+            
+        const data = await response.json();
+        console.log(data);
+        setStockSymbols(data)
     };
 
     const formatTimeSeriesData = (json = {}) => {
