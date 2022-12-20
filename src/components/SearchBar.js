@@ -1,6 +1,7 @@
 import React from 'react';
 import styles from './SearchBar.module.css';
 
+
 const SearchBar = ({ handleChange, options, selectOption }) => {
     // Make sure the options passed in are in the format expected here
     return (
@@ -11,7 +12,7 @@ const SearchBar = ({ handleChange, options, selectOption }) => {
                 onChange={handleChange}
             />
             <div className={styles.optionsDropdown}>
-                {Object.keys(options)?.map((opt) => (
+                {options?.map((opt) => (
                     <p
                         data-testid={opt?.id}
                         onClick={() => selectOption(opt)}
