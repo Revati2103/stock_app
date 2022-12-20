@@ -7,15 +7,14 @@ const ChartContainer = () => {
     const [stockSymbols, setStockSymbols] = useState([]); // set the symbols in the dropdown
     const [selectedStock, setSelectedStock] = useState(''); // select a stock from the dropdown using `selectedStock`
 
-    const handleChange = async (e) => {
+    const handleChange =  (e) => {
         const val = e.target.value;
         // TODO make a fetch request to get the symbols to populate the dropdown
        
-        const response = await fetch(`https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=${val}&apikey=${process.env.API_KEY}`)
-            
-        const data = await response.json();
-        console.log(data);
-        setStockSymbols(data)
+        fetch(`https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=${val}&apikey=${process.env.API_KEY}`)
+        .then((res) => res.json())
+        .then(data => setStockSymbols(data))
+      
     };
 
     const formatTimeSeriesData = (json = {}) => {
@@ -23,10 +22,14 @@ const ChartContainer = () => {
         // example: [[123345, 11.1], [12312312, 100.1], ..]
     };
 
-    const selectStock = ({ value }) => {
+    const selectStock =  ({ value }) => {
         // TODO when a user clicks on a stock, it should trigger a request to get the daily
-        // https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=
+        // https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${value}
         // the data will need to be formatted using the helper above which needs to be completed
+
+        const res =  fetch(`https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${value}`)
+        const data =  res.json();
+        setSelectedStock(data)
     };
 
     const options = {

@@ -11,7 +11,7 @@ const SearchBar = ({ handleChange, options, selectOption }) => {
                 onChange={handleChange}
             />
             <div className={styles.optionsDropdown}>
-                {options.map((opt) => (
+                {Object.keys(options)?.map((opt) => (
                     <p
                         data-testid={opt?.id}
                         onClick={() => selectOption(opt)}
