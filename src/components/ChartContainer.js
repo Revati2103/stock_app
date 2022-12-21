@@ -1,38 +1,64 @@
-import React, { useState , useEffect} from 'react';
+import React, { useState } from 'react';
 import Chart from './Chart';
 import SearchBar from './SearchBar';
 import styles from './ChartContainer.module.css';
 
 
 const ChartContainer = () => {
-    const [stockSymbols, setStockSymbols] = useState([]); // set the symbols in the dropdown
+    const [stockSymbols, setStockSymbols] = useState([]);
+    const [selectedStock, setSelectedStock] = useState('');
+    const [low, setLows] = useState([]);
+    const [high, setHighs] = useState([]);
 
-    const [selectedStock, setSelectedStock] = useState(''); // select a stock from the dropdown using `selectedStock`
- 
-
-    const handleChange =  (e) => {
+    const handleChange = (e) => {
         const val = e.target.value;
-        // TODO make a fetch request to get the symbols to populate the dropdown
-       
-        fetch(`https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=${val}&apikey=${process.env.REACT_APP_API_KEY}`)
-        .then((res) => res.json())
-        .then(data => setStockSymbols(data))
-      
+
+        if (val.length >= 3) {
+            window
+                .fetch(
+                    `https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=${val}&apikey=${process.env.REACT_APP_API_KEY}`
+                )
+                .then((res) => res.json())
+                .then((json) => {
+                    setStockSymbols(
+                        (json?.bestMatches || []).map((stock) => ({
+                            id: stock?.['1. symbol'],
+                            value: stock?.['1. symbol'],
+                            ...stock,
+                        }))
+                    );
+                })
+                .catch((e) => console.log(e));
+        }
     };
 
     const formatTimeSeriesData = (json = {}) => {
-        // TODO this function should format the data in a way highcharts expects it - [date (in seconds), value]
-        // example: [[123345, 11.1], [12312312, 100.1], ..]
+        const [lows, highs] = [[], []];
+        const times = Object.keys(json);
+
+        times.forEach((time) => {
+            const formattedDate = new Date(time).getTime();
+            highs.push([formattedDate, +json[time]?.['2. high']]);
+            lows.push([formattedDate, +json[time]?.['3. low']]);
+        });
+
+        setLows(lows);
+        setHighs(highs);
     };
 
-    const selectStock =  ({ value }) => {
-        // TODO when a user clicks on a stock, it should trigger a request to get the daily
-        // https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${value}
-        // the data will need to be formatted using the helper above which needs to be completed
-        fetch(`https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=${value}&outputsize=compact&apikey=${process.env.REACT_APP_API_KEY}`)
-        .then((res) => res.json())
-        .then(data => formatTimeSeriesData(data))
-      
+    const selectStock = ({ value }) => {
+        setSelectedStock(value);
+        setStockSymbols([]);
+        setSelectedStock(value);
+
+        window
+            .fetch(
+                `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=${value}&apikey=${process.env.REACT_APP_API_KEY}`
+            )
+            .then((res) => res.json())
+            .then((json) => {
+                formatTimeSeriesData(json?.['Time Series (Daily)']);
+            });
     };
 
     const options = {
@@ -64,12 +90,12 @@ const ChartContainer = () => {
             {
                 type: 'spline',
                 name: 'Low',
-                data: [], // add the data for daily lows here
+                data: [...low],
             },
             {
                 type: 'spline',
                 name: 'High',
-                data: [], // add the data for daily highs here
+                data: [...high],
             },
         ],
     };
@@ -81,7 +107,7 @@ const ChartContainer = () => {
                 options={stockSymbols}
                 selectOption={selectStock}
             />
-            {options.series[0].data.length ? (
+            {low.length && high.length ? (
                 <div
                     className={styles.chartContainer}
                     data-testid="stock-chart"
